@@ -522,6 +522,16 @@ export class ActionService {
   }
 
   /**
+   * @param {!Element} node
+   * @param {string} actionsString
+   */
+  setActions(node, actionsString) {
+    node.setAttribute('on', actionsString);
+    // Reset cache.
+    delete node[ACTION_MAP_];
+  }
+
+  /**
    * Given a browser 'change' or 'input' event, add `details` property to it
    * containing whitelisted properties of the target element.
    * @param {!ActionEventDef} event
