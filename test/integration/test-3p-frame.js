@@ -323,8 +323,9 @@ describe.configure().ifNewChrome().run('3p-frame', () => {
 
   it('should create frame with default url if custom disabled', () => {
     setupElementFunctions(container);
-    const iframe =
-        getIframe(window, container, '_ping_', {clientId: 'cidValue'});
+    const iframe = getIframe(window, container, '_ping_',
+        writer => writer.setClientId('cidValue'));
+
     expect(iframe.src).to.equal(
         'http://ads.localhost:9876/dist.3p/current/frame.max.html');
   });
