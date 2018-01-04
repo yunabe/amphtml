@@ -53,7 +53,7 @@ import {
 import {A4AVariableSource} from './a4a-variable-source';
 // TODO(tdrl): Temporary.  Remove when we migrate to using amp-analytics.
 import {getTimingDataAsync} from '../../../src/service/variable-source';
-import {getContextMetadata} from '../../../src/iframe-attributes';
+import {getContextMetadata, getSafeframeMetadata} from '../../../src/iframe-attributes';
 import {getBinaryTypeNumericalCode} from '../../../ads/google/a4a/utils';
 import {signingServerURLs} from '../../../ads/_a4a-config';
 import {triggerAnalyticsEvent} from '../../../src/analytics';
@@ -1505,7 +1505,8 @@ export class AmpA4A extends AMP.BaseElement {
         contextMetadata['creative'] = creative;
         name = JSON.stringify(contextMetadata);
       } else if (method == XORIGIN_MODE.SAFEFRAME) {
-        contextMetadata = JSON.stringify(contextMetadata);
+	  console.log("Test!!");
+        contextMetadata = getSafeframeMetadata();
         name = `${this.safeframeVersion};${creative.length};${creative}` +
             `${contextMetadata}`;
       }

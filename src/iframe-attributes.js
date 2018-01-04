@@ -88,3 +88,7 @@ export function getContextMetadata(
   }
   return attributes;
 }
+
+export function getSafeframeMetadata() {
+    return "{\&quot;windowCoords_t\&quot;:23,\&quot;windowCoords_r\&quot;:1317,\&quot;windowCoords_b\&quot;:858,\&quot;windowCoords_l\&quot;:0,\&quot;frameCoords_t\&quot;:1169,\&quot;frameCoords_r\&quot;:525,\&quot;frameCoords_b\&quot;:1669,\&quot;frameCoords_l\&quot;:25,\&quot;styleZIndex\&quot;:\&quot;auto\&quot;,\&quot;allowedExpansion_t\&quot;:426,\&quot;allowedExpansion_r\&quot;:0,\&quot;allowedExpansion_b\&quot;:0,\&quot;allowedExpansion_l\&quot;:25,\&quot;xInView\&quot;:0.85,\&quot;yInView\&quot;:0.624}&quot;,&quot;permissions&quot;:&quot;{\&quot;expandByOverlay\&quot;:true,\&quot;expandByPush\&quot;:true,\&quot;readCookie\&quot;:false,\&quot;writeCookie\&quot;:false}&quot;,&quot;metadata&quot;:&quot;{\&quot;shared\&quot;:{\&quot;sf_ver\&quot;:\&quot;1-0-14\&quot;,\&quot;ck_on\&quot;:1,\&quot;flash_ver\&quot;:\&quot;0\&quot;}}&quot;,&quot;reportCreativeGeometry&quot;:false,&quot;isDifferentSourceWindow&quot;:false,&quot;goog_safeframe_hlt&quot;:{}}";
+}
