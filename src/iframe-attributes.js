@@ -90,5 +90,39 @@ export function getContextMetadata(
 }
 
 export function getSafeframeMetadata() {
-    return "{\&quot;windowCoords_t\&quot;:23,\&quot;windowCoords_r\&quot;:1317,\&quot;windowCoords_b\&quot;:858,\&quot;windowCoords_l\&quot;:0,\&quot;frameCoords_t\&quot;:1169,\&quot;frameCoords_r\&quot;:525,\&quot;frameCoords_b\&quot;:1669,\&quot;frameCoords_l\&quot;:25,\&quot;styleZIndex\&quot;:\&quot;auto\&quot;,\&quot;allowedExpansion_t\&quot;:426,\&quot;allowedExpansion_r\&quot;:0,\&quot;allowedExpansion_b\&quot;:0,\&quot;allowedExpansion_l\&quot;:25,\&quot;xInView\&quot;:0.85,\&quot;yInView\&quot;:0.624}&quot;,&quot;permissions&quot;:&quot;{\&quot;expandByOverlay\&quot;:true,\&quot;expandByPush\&quot;:true,\&quot;readCookie\&quot;:false,\&quot;writeCookie\&quot;:false}&quot;,&quot;metadata&quot;:&quot;{\&quot;shared\&quot;:{\&quot;sf_ver\&quot;:\&quot;1-0-14\&quot;,\&quot;ck_on\&quot;:1,\&quot;flash_ver\&quot;:\&quot;0\&quot;}}&quot;,&quot;reportCreativeGeometry&quot;:false,&quot;isDifferentSourceWindow&quot;:false,&quot;goog_safeframe_hlt&quot;:{}}";
+  return JSON.stringify({
+    "initialGeometry": {
+      "windowCoords_t":23,
+      "windowCoords_r":1317,
+      "windowCoords_b":858,
+      "windowCoords_l":0,
+      "frameCoords_t":1169,
+      "frameCoords_r":525,
+      "frameCoords_b":1669,
+      "frameCoords_l":25,
+      "styleZIndex":"auto",
+      "allowedExpansion_t":426,
+      "allowedExpansion_r":0,
+      "allowedExpansion_b":0,
+      "allowedExpansion_l":25,
+      "xInView":0.85,
+      "yInView":0.624
+    },
+    "permissions": {
+      "expandByOverlay":true,
+      "expandByPush":true,
+      "readCookie":false,
+      "writeCookie":false
+    },
+    "metadata": {
+      "shared": {
+        "sf_ver":"1-0-14",
+        "ck_on":1,
+        "flash_ver":"0"
+      },
+      "reportCreativeGeometry":false,
+      "isDifferentSourceWindow":false,
+      "goog_safeframe_hlt":{}
+    }
+  });
 }
