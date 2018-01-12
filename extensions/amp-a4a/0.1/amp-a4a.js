@@ -1505,8 +1505,10 @@ export class AmpA4A extends AMP.BaseElement {
         contextMetadata['creative'] = creative;
         name = JSON.stringify(contextMetadata);
       } else if (method == XORIGIN_MODE.SAFEFRAME) {
-	  console.log("Test!!");
-        contextMetadata = getSafeframeMetadata();
+	      console.log("Test!!");
+        const safeframeData = getSafeframeMetadata();
+        contextMetadata = JSON.stringify(Object.assign(contextMetadata, safeframeData));
+        //contextMetadata = getSafeframeMetadata();
         name = `${this.safeframeVersion};${creative.length};${creative}` +
             `${contextMetadata}`;
       }

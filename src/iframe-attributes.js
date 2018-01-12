@@ -90,8 +90,10 @@ export function getContextMetadata(
 }
 
 export function getSafeframeMetadata() {
-  return JSON.stringify({
-    "initialGeometry": {
+  const config = {
+    "uid": 12345,
+    "hostPeerName": "foo",
+    "initialGeometry": JSON.stringify({
       "windowCoords_t":23,
       "windowCoords_r":1317,
       "windowCoords_b":858,
@@ -107,22 +109,23 @@ export function getSafeframeMetadata() {
       "allowedExpansion_l":25,
       "xInView":0.85,
       "yInView":0.624
-    },
-    "permissions": {
+    }),
+    "permissions": JSON.stringify({
       "expandByOverlay":true,
       "expandByPush":true,
       "readCookie":false,
       "writeCookie":false
-    },
-    "metadata": {
+    }),
+    "metadata": JSON.stringify({
       "shared": {
         "sf_ver":"1-0-14",
         "ck_on":1,
         "flash_ver":"0"
       },
-      "reportCreativeGeometry":false,
-      "isDifferentSourceWindow":false,
-      "goog_safeframe_hlt":{}
-    }
-  });
+    }),
+    "reportCreativeGeometry":false,
+    "isDifferentSourceWindow":false,
+    "goog_safeframe_hlt":{}
+  };
+  return config;
 }
