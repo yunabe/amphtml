@@ -118,7 +118,7 @@ export function getSafeframeMetadata() {
     }),
     "metadata": JSON.stringify({
       "shared": {
-        "sf_ver":"1-0-14",
+        "sf_ver":"1-0-15",
         "ck_on":1,
         "flash_ver":"0"
       },

@@ -69,7 +69,7 @@ const METADATA_STRINGS = [
 // acceptable solution to the 'Safari on iOS doesn't fetch iframe src from
 // cache' issue.  See https://github.com/ampproject/amphtml/issues/5614
 /** @type {string} */
-export const DEFAULT_SAFEFRAME_VERSION = '1-0-14';
+export const DEFAULT_SAFEFRAME_VERSION = '1-0-15';
 
 /** @const {string} */
 export const CREATIVE_SIZE_HEADER = 'X-CreativeSize';
@@ -713,7 +713,8 @@ export class AmpA4A extends AMP.BaseElement {
             fetchResponse.headers.get(SAFEFRAME_VERSION_HEADER);
           if (/^[0-9-]+$/.test(safeframeVersionHeader) &&
               safeframeVersionHeader != DEFAULT_SAFEFRAME_VERSION) {
-            this.safeframeVersion = safeframeVersionHeader;
+            // DO NOT SUBMIT THIS CHANGE
+            //this.safeframeVersion = safeframeVersionHeader;
             this.preconnect.preload(this.getSafeframePath_());
           }
           // Note: Resolving a .then inside a .then because we need to capture
@@ -1499,15 +1500,16 @@ export class AmpA4A extends AMP.BaseElement {
       // TODO(bradfrizzell): change name of function and var
       let contextMetadata = getContextMetadata(
           this.win, this.element, this.sentinel,
-          this.getAdditionalContextMetadata());
+          this.getAdditionalContextMetadata(method == XORIGIN_MODE.SAFEFRAME));
       // TODO(bradfrizzell) Clean up name assigning.
       if (method == XORIGIN_MODE.NAMEFRAME) {
         contextMetadata['creative'] = creative;
         name = JSON.stringify(contextMetadata);
       } else if (method == XORIGIN_MODE.SAFEFRAME) {
 	      console.log("Test!!");
-        const safeframeData = getSafeframeMetadata();
-        contextMetadata = JSON.stringify(Object.assign(contextMetadata, safeframeData));
+        contextMetadata = JSON.stringify(contextMetadata);
+        //const safeframeData = getSafeframeMetadata();
+        //contextMetadata = JSON.stringify(Object.assign(contextMetadata, safeframeData));
         //contextMetadata = getSafeframeMetadata();
         name = `${this.safeframeVersion};${creative.length};${creative}` +
             `${contextMetadata}`;

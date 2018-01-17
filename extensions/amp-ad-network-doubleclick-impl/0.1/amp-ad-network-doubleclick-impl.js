@@ -1282,9 +1282,9 @@ export class AmpAdNetworkDoubleclickImpl extends AmpA4A {
   }
 
   /** @override */
-  getAdditionalContextMetadata() {
+  getAdditionalContextMetadata(isSafeframe) {
     const attributes = dict({});
-    if (this.isFluid_) {
+    if (this.isFluid_ || isSafeframe) {
       attributes['uid'] = 1;
       attributes['hostPeerName'] = this.win.location.origin;
       // The initial geometry isn't used for anything important, but it is
