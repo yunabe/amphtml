@@ -187,6 +187,26 @@ function dropListenSentinel(listenSentinel) {
   }
 }
 
+const safeframeMessageChannels = {};
+
+function isGptSafeframeMessage(message) {
+  if (message && message.c && message.c.match('sfchannel')) {
+    return true;
+  }
+  return false;
+}
+
+function setupSafeframeChannel(channel, source) {
+    source./*OK*/postMessage(
+        JSON.stringify(dict({'message': 'connect', 'c': channel})),
+        '*');
+}
+
+function handleSafeframeMessage() {
+  setupSafeframe();
+  console.log("Safeframe message received");
+}
+
 /**
  * Registers the global listenFor event listener if it has yet to be.
  * @param {!Window} parentWin
@@ -200,6 +220,14 @@ function registerGlobalListenerIfNeeded(parentWin) {
       return;
     }
     const data = parseIfNeeded(getData(event));
+    if (isGptSafeframeMessage(data)) {
+      if (!safeframeMessageChannels[data.c]) {
+        setupSafeframeChannel(data.c, event.source);
+        safeframeMessageChannels[data.c] = true;
+      } else {
+        handleSafeframeMessage();
+      }
+    }
     if (!data || !data['sentinel']) {
       return;
     }
@@ -232,6 +260,8 @@ function registerGlobalListenerIfNeeded(parentWin) {
   parentWin.addEventListener('message', listenForListener);
 }
 
+let setupSafeframe;
+
 /**
  * Allows listening for message from the iframe. Returns an unlisten
  * function to remove the listener.
@@ -246,13 +276,14 @@ function registerGlobalListenerIfNeeded(parentWin) {
  * @return {!UnlistenDef}
  */
 export function listenFor(
-  iframe, typeOfMessage, callback, opt_is3P, opt_includingNestedWindows) {
+    iframe, typeOfMessage, callback, opt_is3P, opt_includingNestedWindows, setupSFFunc) {
   dev().assert(iframe.src, 'only iframes with src supported');
   dev().assert(!iframe.parentNode, 'cannot register events on an attached ' +
       'iframe. It will cause hair-pulling bugs like #2942');
   dev().assert(callback);
   const parentWin = iframe.ownerDocument.defaultView;
 
+  setupSafeframe = setupSFFunc;
   registerGlobalListenerIfNeeded(parentWin);
 
   const listenForEvents = getOrCreateListenForEvents(
@@ -260,7 +291,6 @@ export function listenFor(
       iframe,
       opt_is3P
   );
-
 
   let events = listenForEvents[typeOfMessage] ||
     (listenForEvents[typeOfMessage] = []);

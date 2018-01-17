@@ -90,6 +90,10 @@ export class AmpAdXOriginIframeHandler {
     this.sendPositionPending_ = false;
   }
 
+  setupSafeframe() {
+    this.intersectionObserver_.startSendingIntersectionChanges_();
+  }
+
 
   /**
    * Sets up listeners and iframe state for iframe containing ad creative.
@@ -152,7 +156,7 @@ export class AmpAdXOriginIframeHandler {
                 'messageId': messageId,
               }), true
           );
-        }, true, false));
+        }, true, false, this.setupSafeframe));
 
     // Install iframe resize API.
     this.unlisteners_.push(listenFor(this.iframe, 'embed-size',
