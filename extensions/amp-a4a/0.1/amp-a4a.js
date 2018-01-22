@@ -373,6 +373,8 @@ export class AmpA4A extends AMP.BaseElement {
      * @private {?Element}
      */
     this.a4aAnalyticsElement_ = null;
+
+    this.renderMethod = null;
   }
 
   /** @override */
@@ -1268,6 +1270,10 @@ export class AmpA4A extends AMP.BaseElement {
     return getMode().localDev ? ['google', 'google-dev'] : ['google'];
   }
 
+  setupSafeframe_() {
+    return;
+  }
+
   /**
    * Render non-AMP creative within cross domain iframe.
    * @return {Promise<boolean>} Whether the creative was successfully rendered.
@@ -1286,6 +1292,9 @@ export class AmpA4A extends AMP.BaseElement {
     // cross-domain iframe solutions.
     const method = this.experimentalNonAmpCreativeRenderMethod_;
     let renderPromise = Promise.resolve(false);
+    if (method == XORIGIN_MODE.SAFEFRAME) {
+      this.setupSafeframe_();
+    }
     if ((method == XORIGIN_MODE.SAFEFRAME ||
          method == XORIGIN_MODE.NAMEFRAME) &&
         this.creativeBody_) {
@@ -1482,6 +1491,7 @@ export class AmpA4A extends AMP.BaseElement {
       let name = '';
       switch (method) {
         case XORIGIN_MODE.SAFEFRAME:
+          this.isSafeframe = true;
           srcPath = this.getSafeframePath_() + '?n=0';
           break;
         case XORIGIN_MODE.NAMEFRAME:
@@ -1517,6 +1527,8 @@ export class AmpA4A extends AMP.BaseElement {
       return this.iframeRenderHelper_(dict({'src': srcPath, 'name': name}));
     });
   }
+
+  safeframeProcessor() {}
 
   /**
    *

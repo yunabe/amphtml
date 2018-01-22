@@ -231,6 +231,10 @@ const BLOCK_SRA_COMBINERS_ = [
       instance => instance.buildIdentityParams_()),
 ];
 
+function createSafeframeListener() {
+
+}
+
 /**
  * Used to manage messages for different fluid ad slots.
  *
@@ -240,27 +244,31 @@ const BLOCK_SRA_COMBINERS_ = [
  */
 const fluidListeners = {};
 
+function setupSafeframeChannel(data) {
+  // This is a request to establish a postmessaging connection.
+  const listener = fluidListeners[data['e']];
+  if (!listener) {
+    dev().warn(TAG, `Listener for sentinel ${data['e']} not found.`);
+    return;
+  }
+  if (!listener.connectionEstablished) {
+    listener.instance.connectFluidMessagingChannel();
+    listener.connectionEstablished = true;
+  }
+  return;
+}
+
 /**
  * @param {!Event} event
  * @private
  */
-function fluidMessageListener_(event) {
+function processSafeframeMessage_(event) {
   const data = tryParseJson(getData(event));
   if (event.origin != SAFEFRAME_ORIGIN || !data) {
     return;
   }
   if (data['e']) {
-    // This is a request to establish a postmessaging connection.
-    const listener = fluidListeners[data['e']];
-    if (!listener) {
-      dev().warn(TAG, `Listener for sentinel ${data['e']} not found.`);
-      return;
-    }
-    if (!listener.connectionEstablished) {
-      listener.instance.connectFluidMessagingChannel();
-      listener.connectionEstablished = true;
-    }
-    return;
+    setupSafeframeChannel(data);
   }
   const payload = tryParseJson(data['p']);
   if (!payload || !payload['sentinel']) {
@@ -869,7 +877,7 @@ export class AmpAdNetworkDoubleclickImpl extends AmpA4A {
   layoutCallback() {
     const registerFluidAndExec = () => {
       if (this.isFluid_) {
-        this.registerListenerForFluid_();
+        this.setupSafeframe_();
       }
       return super.layoutCallback();
     };
@@ -1330,13 +1338,15 @@ export class AmpAdNetworkDoubleclickImpl extends AmpA4A {
   }
 
   /** @private  */
-  registerListenerForFluid_() {
+  /** @override */
+  setupSafeframe_() {
     fluidListeners[this.sentinel] = fluidListeners[this.sentinel] || {
       instance: this,
       connectionEstablished: false,
     };
+    //const iO = this.xOriginIframeHandler_.intersectionObserver_;
     if (Object.keys(fluidListeners).length == 1) {
-      this.win.addEventListener('message', fluidMessageListener_, false);
+      this.win.addEventListener('message', processSafeframeMessage_, false);
     }
   }
 
@@ -1349,6 +1359,16 @@ export class AmpAdNetworkDoubleclickImpl extends AmpA4A {
     if (!Object.keys(fluidListeners).length) {
       this.win.removeEventListener('message', fluidMessageListener_);
     }
+  }
+
+  /** @override */
+  safeframeProcessor(pendingChanges) {
+    const geomUpdate = {};
+    console.log("I am doubleclick's safeframe processor");
+    console.log(pendingChanges);
+    geomUpdate['uid'] = 1234;
+    geomUpdate['newGeometry'] = pendingChanges;
+    return geomUpdate
   }
 
   /**

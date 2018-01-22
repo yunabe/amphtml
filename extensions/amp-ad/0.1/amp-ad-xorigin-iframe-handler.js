@@ -91,7 +91,7 @@ export class AmpAdXOriginIframeHandler {
   }
 
   setupSafeframe() {
-    this.intersectionObserver_.startSendingIntersectionChanges_();
+    this.intersectionObserver_.startSendingIntersectionChanges_(this.safeframeProcessor);
   }
 
 
@@ -110,8 +110,14 @@ export class AmpAdXOriginIframeHandler {
     const timer = Services.timerFor(this.baseInstance_.win);
 
     // Init IntersectionObserver service.
-    this.intersectionObserver_ = new IntersectionObserver(
-        this.baseInstance_, this.iframe, true);
+    if (this.baseInstance_.isSafeframe) {
+      this.intersectionObserver_ = new IntersectionObserver(
+          this.baseInstance_, this.iframe, true, this.baseInstance_.safeframeProcessor);
+      this.setupSafeframe();
+    } else {
+      this.intersectionObserver_ = new IntersectionObserver(
+          this.baseInstance_, this.iframe, true);
+    }
 
     this.embedStateApi_ = new SubscriptionApi(
         this.iframe, 'send-embed-state', true,

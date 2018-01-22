@@ -203,7 +203,6 @@ function setupSafeframeChannel(channel, source) {
 }
 
 function handleSafeframeMessage() {
-  setupSafeframe();
   console.log("Safeframe message received");
 }
 
@@ -220,16 +219,18 @@ function registerGlobalListenerIfNeeded(parentWin) {
       return;
     }
     const data = parseIfNeeded(getData(event));
-    if (isGptSafeframeMessage(data)) {
-      if (!safeframeMessageChannels[data.c]) {
-        setupSafeframeChannel(data.c, event.source);
-        safeframeMessageChannels[data.c] = true;
-      } else {
-        handleSafeframeMessage();
-      }
-    }
     if (!data || !data['sentinel']) {
-      return;
+      if (isGptSafeframeMessage(data)) {
+        if (!safeframeMessageChannels[data.c]) {
+          setupSafeframeChannel(data.c, event.source);
+          data['sentinel'] = data['e'];
+          safeframeMessageChannels[data.c] = event.source;
+        } else {
+          handleSafeframeMessage();
+        }
+      } else {
+        return;
+      }
     }
 
     const listenForEvents = getListenForEvents(
@@ -244,7 +245,11 @@ function registerGlobalListenerIfNeeded(parentWin) {
 
     let listeners = listenForEvents[data['type']];
     if (!listeners) {
-      return;
+      if (data.c && data.c.match('sfchannel') && listenForEvents['sfchannel']) {
+        listeners = listenForEvents['sfchannel'];
+      } else {
+        return;
+      }
     }
 
     // We slice to avoid issues with adding another listener or unlistening
@@ -276,14 +281,13 @@ let setupSafeframe;
  * @return {!UnlistenDef}
  */
 export function listenFor(
-    iframe, typeOfMessage, callback, opt_is3P, opt_includingNestedWindows, setupSFFunc) {
+    iframe, typeOfMessage, callback, opt_is3P, opt_includingNestedWindows) {
   dev().assert(iframe.src, 'only iframes with src supported');
   dev().assert(!iframe.parentNode, 'cannot register events on an attached ' +
       'iframe. It will cause hair-pulling bugs like #2942');
   dev().assert(callback);
   const parentWin = iframe.ownerDocument.defaultView;
 
-  setupSafeframe = setupSFFunc;
   registerGlobalListenerIfNeeded(parentWin);
 
   const listenForEvents = getOrCreateListenForEvents(
@@ -447,7 +451,7 @@ export class SubscriptionApi {
    * @param {function(!JsonObject, !Window, string)} requestCallback Callback
    *     invoked whenever a new window subscribes.
    */
-  constructor(iframe, type, is3p, requestCallback) {
+  constructor(iframe, type, is3p, requestCallback, opt_useRegex) {
     /** @private @const {!Element} */
     this.iframe_ = iframe;
     /** @private @const {boolean} */
@@ -465,7 +469,7 @@ export class SubscriptionApi {
       requestCallback(data, source, origin);
     }, this.is3p_,
         // For 3P frames we also allow nested frames within them to subscribe..
-    this.is3p_ /* opt_includingNestedWindows */);
+                               this.is3p_ /* opt_includingNestedWindows */, opt_useRegex);
   }
 
   /**

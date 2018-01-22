@@ -119,7 +119,7 @@ export class IntersectionObserver {
    *     intersection data.
    * @param {?boolean} opt_is3p Set to `true` when the iframe is 3'rd party.
    */
-  constructor(baseElement, iframe, opt_is3p) {
+  constructor(baseElement, iframe, opt_is3p, opt_safeframeProcessor) {
     /** @private @const {!AMP.BaseElement} */
     this.baseElement_ = baseElement;
     /** @private @const {!./service/timer-impl.Timer} */
@@ -151,8 +151,15 @@ export class IntersectionObserver {
         // get an update.
         () => this.startSendingIntersectionChanges_());
 
+    this.safeframeApi_ = new SubscriptionApi(
+        iframe, 'sfchannel', opt_is3p || false, () => {
+          this.startSendingIntersectionChanges_();
+        }, /* use regex match */ true);
+
     /** @private {?Function} */
     this.unlistenViewportChanges_ = null;
+
+    this.safeframeProcessor = opt_safeframeProcessor;
   }
 
   fire() {
@@ -256,6 +263,10 @@ export class IntersectionObserver {
     this.postMessageApi_.send('intersection', dict({
       'changes': this.pendingChanges_,
     }));
+    if (this.safeframeProcessor) {
+      const sfMessage = this.safeframeProcessor(this.pendingChanges_);
+      this.postMessageApi_.send('geometry_update', sfMessage);
+    }
     this.pendingChanges_.length = 0;
   }
 
