@@ -56,7 +56,9 @@ const NUM_ALL_CHARS_LIMIT = 1500;
 
 /**
  * TextRange represents a text range.
- * @typedef {{sentences: !Array<string>}}
+ * If doNothing is true, checks whether highlighted texts are found but do not
+ * show highlighted texts to users.
+ * @typedef {{sentences: !Array<string>, doNothing: boolean}}
  */
 let HighlightInfoDef;
 
@@ -97,8 +99,13 @@ export function getHighlightParam(ampdoc) {
       return null;
     }
   }
+  let doNothing = false;
+  if (highlight['n']) {
+    doNothing = true;
+  }
   return {
     sentences: sens,
+    doNothing,
   };
 }
 
@@ -166,6 +173,9 @@ export class HighlightHandler {
     }
     const scrollTop = this.calcTopToCenterHighlightedNodes_();
     this.sendHighlightState_('found', dict({'scroll': scrollTop}));
+    if (highlightInfo.doNothing) {
+      return;
+    }
 
     for (let i = 0; i < this.highlightedNodes_.length; i++) {
       const n = this.highlightedNodes_[i];
