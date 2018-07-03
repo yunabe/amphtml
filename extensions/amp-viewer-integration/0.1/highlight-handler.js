@@ -263,7 +263,37 @@ export class HighlightHandler {
         .animateScrollIntoView(sentinel).then(() => {
           this.sendHighlightState_('shown');
           body.removeChild(sentinel);
+          this.preventMistapOnSnackbar_();
         });
+  }
+
+  /**
+   * Injects a bottom sticky layer to prevent UI elements at the bottom of the
+   * viewport from being clicked while the search page shows the snackbar about
+   * highlighting.
+   * We need this workaround to bypass browser side bugs
+   *
+   * Bugs:
+   * https://bugs.chromium.org/p/chromium/issues/detail?id=859784
+   * https://b.corp.google.com/issues/110805720
+   */
+  preventMistapOnSnackbar_() {
+    const body = this.ampdoc_.getBody();
+    const overlay = this.ampdoc_.win.document.createElement('div');
+    setStyles(overlay, {
+      'position': 'fixed',
+      'bottom': '0',
+      'left': '0',
+      'right': '0',
+      'height': '200px',
+      'background-color': 'red',
+      'opacity': '0.3',
+      'z-index': '1000',
+    });
+    body.appendChild(overlay);
+    setTimeout(()=>{
+      body.removeChild(overlay);
+    }, 5*6000);
   }
 
   /**
