@@ -214,6 +214,9 @@ export class HighlightHandler {
       });
     }
 
+    this.viewport_.setScrollTop(scrollTop);
+
+    /*
     const visibility = this.viewer_.getVisibilityState();
     if (visibility == 'visible') {
       this.animateScrollToTop_(scrollTop);
@@ -232,6 +235,7 @@ export class HighlightHandler {
         called = true;
       });
     }
+*/
     listenOnce(this.ampdoc_.getBody(), 'click',
         this.dismissHighlight_.bind(this));
   }
@@ -249,6 +253,7 @@ export class HighlightHandler {
     let minTop = Number.MAX_VALUE;
     let maxBottom = 0;
     const paddingTop = viewport.getPaddingTop();
+    console.log('viewport.getHeight()', viewport.getHeight(), 'viewport.getPaddingTop()', viewport.getPaddingTop());
     for (let i = 0; i < nodes.length; i++) {
       // top and bottom returned by getLayoutRect includes the header padding
       // size. We need to cancel the padding to calculate the positions in
@@ -263,9 +268,13 @@ export class HighlightHandler {
     }
     const height = viewport.getHeight() - paddingTop;
     let pos = (maxBottom + minTop - height) / 2;
-    if (pos > minTop - PAGE_TOP_MARGIN) {
-      pos = minTop - PAGE_TOP_MARGIN;
+    const viewHeight = Math.min(300, height);
+    console.log('pos', pos, 'maxBottom', maxBottom,  'minTop', minTop, 'height', height, 'viewHeight', viewHeight);
+    if (pos > minTop - PAGE_TOP_MARGIN - (height - viewHeight) / 2) {
+      console.log('pos1', pos);
+      pos = minTop - PAGE_TOP_MARGIN - (height - viewHeight) / 2;
     }
+    console.log('pos2', pos);
     return pos > 0 ? pos : 0;
   }
 
