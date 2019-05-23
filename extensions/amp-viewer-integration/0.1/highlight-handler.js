@@ -169,7 +169,10 @@ export class HighlightHandler {
   findHighlightedNodes_(highlightInfo) {
     const {win} = this.ampdoc_;
     const sens = findSentences(
-        win, this.ampdoc_.getBody(), highlightInfo.sentences);
+      win,
+      this.ampdoc_.getBody(),
+      highlightInfo.sentences
+    );
     if (!sens) {
       return;
     }
@@ -236,8 +239,11 @@ export class HighlightHandler {
       });
     }
 */
-    listenOnce(this.ampdoc_.getBody(), 'click',
-        this.dismissHighlight_.bind(this));
+    listenOnce(
+      this.ampdoc_.getBody(),
+      'click',
+      this.dismissHighlight_.bind(this)
+    );
   }
 
   /**
@@ -258,8 +264,11 @@ export class HighlightHandler {
       // top and bottom returned by getLayoutRect includes the header padding
       // size. We need to cancel the padding to calculate the positions in
       // document.body like Viewport.animateScrollIntoView does.
-      const {top, bottom} = moveLayoutRect(viewport.getLayoutRect(nodes[i]),
-          0, -paddingTop);
+      const {top, bottom} = moveLayoutRect(
+        viewport.getLayoutRect(nodes[i]),
+        0,
+        -paddingTop
+      );
       minTop = Math.min(minTop, top);
       maxBottom = Math.max(maxBottom, bottom);
     }
@@ -353,7 +362,9 @@ export class HighlightHandler {
    */
   setupMessaging(messaging) {
     messaging.registerHandler(
-        HIGHLIGHT_DISMISS, this.dismissHighlight_.bind(this));
+      HIGHLIGHT_DISMISS,
+      this.dismissHighlight_.bind(this)
+    );
   }
 
   /**
