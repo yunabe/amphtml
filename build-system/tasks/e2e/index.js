@@ -25,6 +25,7 @@ const Mocha = require('mocha');
 const tryConnect = require('try-net-connect');
 const {cyan} = require('ansi-colors');
 const {execOrDie, execScriptAsync} = require('../../exec');
+const {reportTestStarted} = require('../report-test-status');
 const {watch} = require('gulp');
 
 const HOST = 'localhost';
@@ -40,6 +41,7 @@ function installPackages_() {
 }
 
 function buildRuntime_() {
+  execOrDie('gulp clean');
   execOrDie('gulp dist --fortesting');
 }
 
@@ -97,6 +99,7 @@ async function e2e() {
   require('@babel/register');
   const {describes} = require('./helper');
   describes.configure({
+    browsers: argv.browsers,
     engine: argv.engine,
     headless: argv.headless,
   });
@@ -128,6 +131,7 @@ async function e2e() {
       });
     }
 
+    await reportTestStarted();
     mocha.run(async failures => {
       // end web server
       await cleanUp_();
@@ -160,8 +164,15 @@ module.exports = {
 
 e2e.description = 'Runs e2e tests';
 e2e.flags = {
-  'nobuild': '  Skips building the runtime via `gulp build`',
+  'browsers':
+    '  Run only the specified browser tests. Options are ' +
+    '`chrome`, `firefox`.',
+  'nobuild': '  Skips building the runtime via `gulp dist --fortesting`',
   'files': '  Run tests found in a specific path (ex: **/test-e2e/*.js)',
   'testnames': '  Lists the name of each test being run',
   'watch': '  Watches for changes in files, runs corresponding test(s)',
+  'engine':
+    '  The automation engine that orchestrates the browser. ' +
+    'Options are `puppeteer` or `selenium`. Default: `selenium`',
+  'headless': '  Runs the browser in headless mode',
 };

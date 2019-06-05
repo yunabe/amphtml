@@ -103,8 +103,6 @@ function compile(entryModuleFilenames, outputDir, outputFilename, options) {
     'third_party/inputmask/',
     'node_modules/',
     'build/patched-module/',
-    // Can't seem to suppress `(0, win.eval)` suspicious code warning
-    '3p/environment.js',
     // Generated code.
     'extensions/amp-access/0.1/access-expr-impl.js',
   ];
@@ -173,7 +171,6 @@ function compile(entryModuleFilenames, outputDir, outputFilename, options) {
       'ads/google/**/*.js',
       'ads/inabox/**/*.js',
       // Files under build/. Should be sparse.
-      'build/css.js',
       'build/*.css.js',
       'build/fake-module/**/*.js',
       'build/patched-module/**/*.js',
@@ -224,6 +221,7 @@ function compile(entryModuleFilenames, outputDir, outputFilename, options) {
       'third_party/caja/html-sanitizer.js',
       'third_party/closure-library/sha384-generated.js',
       'third_party/css-escape/css-escape.js',
+      'third_party/fuzzysearch/index.js',
       'third_party/mustache/**/*.js',
       'third_party/timeagojs/**/*.js',
       'third_party/vega/**/*.js',

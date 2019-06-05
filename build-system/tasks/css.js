@@ -40,9 +40,15 @@ async function css() {
 
 const cssEntryPoints = [
   {
-    path: 'amp.css',
-    outJs: 'css.js',
+    path: 'ampdoc.css',
+    outJs: 'ampdoc.css.js',
     outCss: 'v0.css',
+  },
+  {
+    path: 'ampshared.css',
+    outJs: 'ampshared.css.js',
+    outCss: 'v0.css',
+    append: true,
   },
   {
     path: 'video-autoplay.css',
@@ -70,10 +76,12 @@ function compileCss(watch, opt_compileAll) {
    * @param {string} css
    * @param {string} jsFilename
    * @param {string} cssFilename
+   * @param {boolean} append append CSS to existing file
    * @return {Promise}
    */
-  function writeCss(css, jsFilename, cssFilename) {
+  function writeCss(css, jsFilename, cssFilename, append) {
     return toPromise(
+      // cssText is hardcoded in AmpCodingConvention.java
       file(jsFilename, 'export const cssText = ' + JSON.stringify(css), {
         src: true,
       })
@@ -81,7 +89,11 @@ function compileCss(watch, opt_compileAll) {
         .on('end', function() {
           mkdirSync('build');
           mkdirSync('build/css');
-          fs.writeFileSync(`build/css/${cssFilename}`, css);
+          if (append) {
+            fs.appendFileSync(`build/css/${cssFilename}`, css);
+          } else {
+            fs.writeFileSync(`build/css/${cssFilename}`, css);
+          }
         })
     );
   }
@@ -90,29 +102,31 @@ function compileCss(watch, opt_compileAll) {
    * @param {string} path
    * @param {string} outJs
    * @param {string} outCss
+   * @param {boolean} append
    */
-  function writeCssEntryPoint(path, outJs, outCss) {
+  function writeCssEntryPoint(path, outJs, outCss, append) {
     return jsifyCssAsync(`css/${path}`).then(css =>
-      writeCss(css, outJs, outCss)
+      writeCss(css, outJs, outCss, append)
     );
   }
 
   const startTime = Date.now();
 
-  // Used by `gulp test --local-changes` to map CSS files to JS files.
+  // Used by `gulp unit --local_changes` to map CSS files to JS files.
   fs.writeFileSync('EXTENSIONS_CSS_MAP', JSON.stringify(extensions));
 
   let promise = Promise.resolve();
 
   cssEntryPoints.forEach(entryPoint => {
-    const {path, outJs, outCss} = entryPoint;
-    promise = promise.then(() => writeCssEntryPoint(path, outJs, outCss));
+    const {path, outJs, outCss, append} = entryPoint;
+    promise = promise.then(() =>
+      writeCssEntryPoint(path, outJs, outCss, append)
+    );
   });
 
   return promise
     .then(() =>
       buildExtensions({
-        bundleOnlyIfListedInFiles: false,
         compileOnlyCss: true,
         compileAll: opt_compileAll,
       })

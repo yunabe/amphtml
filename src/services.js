@@ -250,14 +250,6 @@ export class Services {
 
   /**
    * @param {!Window} window
-   * @return {!./service/document-state.DocumentState}
-   */
-  static documentStateFor(window) {
-    return getService(window, 'documentState');
-  }
-
-  /**
-   * @param {!Window} window
    * @return {!./service/extensions-impl.Extensions}
    */
   static extensionsFor(window) {
@@ -268,6 +260,7 @@ export class Services {
   }
 
   /**
+   * TODO(#22414): Remove this in favor of the async API.
    * Returns a service to register callbacks we wish to execute when an
    * amp-form is submitted. This is the sync version used by amp-form only, all
    * other extensions should use `formSubmitPromiseForDoc` below.
@@ -292,6 +285,15 @@ export class Services {
       elementOrAmpDoc,
       'form-submit-service'
     ));
+  }
+
+  /**
+   * @param {!Window} window
+   * @return {!./service/document-state.DocumentState}
+   * @restricted  Only to be used for global document services, such as vsync.
+   */
+  static globalDocumentStateFor(window) {
+    return getService(window, 'documentState');
   }
 
   /**
