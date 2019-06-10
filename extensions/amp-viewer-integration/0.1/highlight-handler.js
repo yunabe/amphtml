@@ -219,26 +219,42 @@ export class HighlightHandler {
 
     this.viewport_.setScrollTop(scrollTop);
 
-    /*
-    const visibility = this.viewer_.getVisibilityState();
-    if (visibility == 'visible') {
-      this.animateScrollToTop_(scrollTop);
-    } else {
-      // Scroll to the animation start position before the page becomes visible
-      // so that the top of the page is not painted when it becomes visible.
-      this.scrollToAnimationStart_(scrollTop);
-
-      let called = false;
-      this.viewer_.onVisibilityChanged(() => {
-        // TODO(yunabe): Unregister the handler.
-        if (called || this.viewer_.getVisibilityState() != 'visible') {
+    const resources = Services.resourcesForDoc(this.ampdoc_);
+    resources
+      .getMeasuredResources(this.ampdoc_.win, r => {
+        // cf
+        // http://cs/github/ampproject/amphtml/ads/google/a4a/utils.js?l=235&rcl=b1fdf737bda700ebefacff4dadb5be6594ea3599
+        if (r.element.tagName !== 'AMP-IMG') {
+          return false;
+        }
+        return true;
+      })
+      .then(rs => {
+        let minTop = Number.MAX_VALUE;
+        let maxBottom = 0;
+        for (let i = 0; i < this.highlightedNodes_.length; i++) {
+          const n = this.highlightedNodes_[i];
+          const {top, bottom} = this.viewport_.getLayoutRect(n);
+          minTop = Math.min(minTop, top);
+          maxBottom = Math.max(maxBottom, bottom);
+        }
+        if (minTop >= maxBottom) {
           return;
         }
-        this.animateScrollToTop_(this.calcTopToCenterHighlightedNodes_());
-        called = true;
+        minTop -= 200;
+        maxBottom += 200;
+        for (let i = 0; i < rs.length; i++) {
+          const elm = rs[i].element;
+          const {top, bottom} = this.viewport_.getLayoutRect(elm);
+          if (
+            (top < minTop && bottom > minTop) ||
+            (top >= minTop && top <= maxBottom)
+          ) {
+            resources.requireLayout(elm);
+          }
+        }
       });
-    }
-*/
+
     listenOnce(
       this.ampdoc_.getBody(),
       'click',
@@ -259,7 +275,12 @@ export class HighlightHandler {
     let minTop = Number.MAX_VALUE;
     let maxBottom = 0;
     const paddingTop = viewport.getPaddingTop();
-    console.log('viewport.getHeight()', viewport.getHeight(), 'viewport.getPaddingTop()', viewport.getPaddingTop());
+    console.log(
+      'viewport.getHeight()',
+      viewport.getHeight(),
+      'viewport.getPaddingTop()',
+      viewport.getPaddingTop()
+    );
     for (let i = 0; i < nodes.length; i++) {
       // top and bottom returned by getLayoutRect includes the header padding
       // size. We need to cancel the padding to calculate the positions in
@@ -278,7 +299,18 @@ export class HighlightHandler {
     const height = viewport.getHeight() - paddingTop;
     let pos = (maxBottom + minTop - height) / 2;
     const viewHeight = Math.min(300, height);
-    console.log('pos', pos, 'maxBottom', maxBottom,  'minTop', minTop, 'height', height, 'viewHeight', viewHeight);
+    console.log(
+      'pos',
+      pos,
+      'maxBottom',
+      maxBottom,
+      'minTop',
+      minTop,
+      'height',
+      height,
+      'viewHeight',
+      viewHeight
+    );
     if (pos > minTop - PAGE_TOP_MARGIN - (height - viewHeight) / 2) {
       console.log('pos1', pos);
       pos = minTop - PAGE_TOP_MARGIN - (height - viewHeight) / 2;
