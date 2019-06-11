@@ -31,6 +31,12 @@ import {whenDocumentReady} from '../../../src/document-ready';
 const HIGHLIGHT_DISMISS = 'highlightDismiss';
 
 /**
+ * The message name sent by viewers to dismiss highlights.
+ * @type {string}
+ */
+const HIGHLIGHT_RECOVER = 'highlightRecover';
+
+/**
  * The message name sent by AMP doc to notify the change of the state of text
  * highlighting.
  * @type {string}
@@ -397,6 +403,29 @@ export class HighlightHandler {
       HIGHLIGHT_DISMISS,
       this.dismissHighlight_.bind(this)
     );
+    messaging.registerHandler(
+        HIGHLIGHT_RECOVER,
+        this.rehighlightNodes_.bind(this));
+  }
+
+  /**
+   *
+   */
+  rehighlightNodes_() {
+    if (!this.highlightedNodes_) {
+      return;
+    }
+    for (let i = 0; i < this.highlightedNodes_.length; i++) {
+      const n = this.highlightedNodes_[i];
+      // The background color is same as Android Chrome text finding.
+      // https://cs.chromium.org/chromium/src/chrome/android/java/res/values/colors.xml?l=158&rcl=8b461e376e824c72fec1d6d91cd6633ba344dd55&q=ff9632
+      setStyles(n, {
+        backgroundColor: '#ff9632',
+        color: '#000',
+      });
+    }
+    const scrollTop = this.calcTopToCenterHighlightedNodes_();
+    this.viewport_.setScrollTop(scrollTop);
   }
 
   /**
