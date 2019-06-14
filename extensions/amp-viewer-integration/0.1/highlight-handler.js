@@ -17,7 +17,7 @@
 import {Services} from '../../../src/services';
 import {dict} from '../../../src/utils/object';
 import {findSentences, markTextRangeList} from './findtext';
-import {listenOnce} from '../../../src/event-helper';
+import {listen} from '../../../src/event-helper';
 import {moveLayoutRect} from '../../../src/layout-rect';
 import {parseJson} from '../../../src/json';
 import {parseQueryString} from '../../../src/url';
@@ -261,7 +261,7 @@ export class HighlightHandler {
         }
       });
 
-    listenOnce(
+    listen(
       this.ampdoc_.getBody(),
       'click',
       this.dismissHighlight_.bind(this)
