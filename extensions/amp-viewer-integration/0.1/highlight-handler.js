@@ -451,7 +451,7 @@ export class HighlightHandler {
       // The background color is same as Android Chrome text finding.
       // https://cs.chromium.org/chromium/src/chrome/android/java/res/values/colors.xml?l=158&rcl=8b461e376e824c72fec1d6d91cd6633ba344dd55&q=ff9632
       setStyles(n, {
-        backgroundColor: '#ff9632',
+        backgroundColor: '#fcff00',
         color: '#000',
       });
     }
