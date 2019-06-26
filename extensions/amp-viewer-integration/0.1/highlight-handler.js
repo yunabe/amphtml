@@ -19,6 +19,7 @@ import {dict} from '../../../src/utils/object';
 import {findSentences, markTextRangeList} from './findtext';
 import {listen} from '../../../src/event-helper';
 import {moveLayoutRect} from '../../../src/layout-rect';
+import {once} from '../../../src/utils/function';
 import {parseJson} from '../../../src/json';
 import {parseQueryString} from '../../../src/url';
 import {resetStyles, setInitialDisplay, setStyles} from '../../../src/style';
@@ -73,7 +74,7 @@ const NUM_SENTENCES_LIMIT = 15;
  */
 const NUM_ALL_CHARS_LIMIT = 1500;
 
-/** @typedef {{sentences: !Array<string>, skipRendering: boolean}} */
+/** @typedef {{sentences: !Array<string>, skipScrollAnimation: boolean, skipRendering: boolean}} */
 export let HighlightInfoDef;
 
 /**
@@ -124,8 +125,13 @@ export function getHighlightParam(ampdoc) {
   if (highlight['n']) {
     skipRendering = true;
   }
+  let skipScrollAnimation = false;
+  if (highlight['na']) {
+    skipScrollAnimation = true;
+  }
   return {
     sentences: sens,
+    skipScrollAnimation,
     skipRendering,
   };
 }
@@ -190,6 +196,21 @@ export class HighlightHandler {
   }
 
   /**
+   * Registers a callback invoked once when the doc becomes visible.
+   * @param {function()} handler
+   */
+  onVisibleOnce(handler) {
+    // TODO(yunabe): Unregister the handler.
+    handler = once(handler);
+    this.viewer_.onVisibilityChanged(() => {
+      if (this.viewer_.getVisibilityState() != 'visible') {
+        return;
+      }
+      handler();
+    });
+  }
+
+  /**
    * @param {!HighlightInfoDef} highlightInfo
    * @private
    */
@@ -215,10 +236,9 @@ export class HighlightHandler {
 
     for (let i = 0; i < this.highlightedNodes_.length; i++) {
       const n = this.highlightedNodes_[i];
-      // The background color is same as Android Chrome text finding.
-      // https://cs.chromium.org/chromium/src/chrome/android/java/res/values/colors.xml?l=158&rcl=8b461e376e824c72fec1d6d91cd6633ba344dd55&q=ff9632
+      // The background color is same as Android Chrome text finding (yellow).
       setStyles(n, {
-        backgroundColor: '#ff9632',
+        backgroundColor: '#fcff00',
         color: '#000',
       });
     }
@@ -323,6 +343,17 @@ export class HighlightHandler {
     }
     console.log('pos2', pos);
     return pos > 0 ? pos : 0;
+  }
+
+  /**
+   * Equivalent to animateScrollToTop_ without scroll animation.
+   * @param {number} top
+   * @private
+   */
+  scrollToTopWitoutAnimation_(top) {
+    this.sendHighlightState_('auto_scroll');
+    this.viewport_.setScrollTop(top);
+    this.sendHighlightState_('shown');
   }
 
   /**

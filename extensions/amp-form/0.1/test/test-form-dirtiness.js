@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import {AmpEvents} from '../../../../src/amp-events';
 import {DIRTINESS_INDICATOR_CLASS, FormDirtiness} from '../form-dirtiness';
+import {Services} from '../../../../src/services';
+import {createCustomEvent} from '../../../../src/event-helper';
 
 function getForm(doc) {
   const form = doc.createElement('form');
@@ -30,13 +33,28 @@ function changeInput(element, value) {
   element.dispatchEvent(event);
 }
 
+function dispatchFormValueChangeEvent(element, win) {
+  const ampValueChangeEvent = createCustomEvent(
+    win,
+    AmpEvents.FORM_VALUE_CHANGE,
+    /* detail */ null,
+    {bubbles: true}
+  );
+  element.dispatchEvent(ampValueChangeEvent);
+}
+
 describes.realWin('form-dirtiness', {}, env => {
   let doc, form, dirtinessHandler;
 
   beforeEach(() => {
     doc = env.win.document;
     form = getForm(doc);
-    dirtinessHandler = new FormDirtiness(form);
+    sandbox.stub(Services, 'platformFor').returns({
+      isIos() {
+        return false;
+      },
+    });
+    dirtinessHandler = new FormDirtiness(form, env.win);
   });
 
   describe('ignored elements', () => {
@@ -71,6 +89,31 @@ describes.realWin('form-dirtiness', {}, env => {
     });
   });
 
+  describe('amp-bind changes', () => {
+    let input;
+
+    beforeEach(() => {
+      input = doc.createElement('input');
+      input.name = 'name';
+      form.appendChild(input);
+    });
+
+    it('adds dirtiness class if an element is changed with amp-bind', () => {
+      input.value = 'changed';
+      dispatchFormValueChangeEvent(input, env.win);
+
+      expect(form).to.have.class(DIRTINESS_INDICATOR_CLASS);
+    });
+
+    it('removes dirtiness class if a dirty element is cleared with amp-bind', () => {
+      changeInput(input, 'changed');
+      input.value = '';
+      dispatchFormValueChangeEvent(input, env.win);
+
+      expect(form).to.not.have.class(DIRTINESS_INDICATOR_CLASS);
+    });
+  });
+
   describe('text field changes', () => {
     let textField;
 
@@ -98,6 +141,15 @@ describes.realWin('form-dirtiness', {}, env => {
       changeInput(textField, 'changed');
       expect(form).to.have.class(DIRTINESS_INDICATOR_CLASS);
     });
+
+    it('removes dirtiness class when its value matches the submitted value', () => {
+      changeInput(textField, 'submitted');
+      dirtinessHandler.onSubmitting();
+      dirtinessHandler.onSubmitSuccess();
+      changeInput(textField, 'submitted');
+
+      expect(form).to.not.have.class(DIRTINESS_INDICATOR_CLASS);
+    });
   });
 
   describe('textarea changes', () => {
@@ -122,6 +174,15 @@ describes.realWin('form-dirtiness', {}, env => {
     it('adds dirtiness class when textarea is changed', () => {
       changeInput(textarea, 'changed');
       expect(form).to.have.class(DIRTINESS_INDICATOR_CLASS);
+    });
+
+    it('removes dirtiness class when its value matches the submitted value', () => {
+      changeInput(textarea, 'submitted');
+      dirtinessHandler.onSubmitting();
+      dirtinessHandler.onSubmitSuccess();
+      changeInput(textarea, 'submitted');
+
+      expect(form).to.not.have.class(DIRTINESS_INDICATOR_CLASS);
     });
   });
 
@@ -167,17 +228,30 @@ describes.realWin('form-dirtiness', {}, env => {
   });
 
   describe('#onSubmitSuccess', () => {
-    it('clears the dirtiness class', () => {
-      const input = doc.createElement('input');
+    let input;
+
+    beforeEach(() => {
+      input = doc.createElement('input');
       input.type = 'text';
       input.name = 'text';
       form.appendChild(input);
+    });
 
+    it('clears the dirtiness class', () => {
       changeInput(input, 'changed');
       dirtinessHandler.onSubmitting();
       dirtinessHandler.onSubmitSuccess();
 
       expect(form).to.not.have.class(DIRTINESS_INDICATOR_CLASS);
+    });
+
+    it('tracks new changes after the form has been submitted', () => {
+      changeInput(input, 'changed');
+      dirtinessHandler.onSubmitting();
+      dirtinessHandler.onSubmitSuccess();
+      changeInput(input, 'changed again');
+
+      expect(form).to.have.class(DIRTINESS_INDICATOR_CLASS);
     });
   });
 });
