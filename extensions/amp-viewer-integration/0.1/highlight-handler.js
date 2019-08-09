@@ -324,7 +324,7 @@ export class HighlightHandler {
     }
     const height = viewport.getHeight() - paddingTop;
     let pos = (maxBottom + minTop - height) / 2;
-    const viewHeight = Math.min(300, height);
+    const viewHeight = Math.min(1000, height);
     console.log(
       'pos',
       pos,
